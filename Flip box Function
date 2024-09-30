@@ -1,0 +1,208 @@
+<?php
+function troll9x_flatsome_flip_box_element() {
+    add_ux_builder_shortcode('troll9x_flip_box', array(
+        'name' => __('Flip Box'),
+        'category' => __('Content'),
+        'options' => array(
+            'front_title' => array(
+                'type' => 'textfield',
+                'heading' => __('Front Title'),
+                'default' => ''
+            ),
+            'front_content' => array(
+                'type' => 'textarea',
+                'heading' => __('Front Content'),
+                'default' => ''
+            ),
+            'front_image' => array(
+                'type' => 'image',
+                'heading' => __('Front Image'),
+                'default' => ''
+            ),
+            'front_bg_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Front Background Color'),
+                'default' => ''
+            ),
+            'front_title_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Front Title Color'),
+                'default' => ''
+            ),
+            'front_content_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Front Content Color'),
+                'default' => ''
+            ),
+            'back_title' => array(
+                'type' => 'textfield',
+                'heading' => __('Back Title'),
+                'default' => ''
+            ),
+            'back_content' => array(
+                'type' => 'textarea',
+                'heading' => __('Back Content'),
+                'default' => ''
+            ),
+            'back_image' => array(
+                'type' => 'image',
+                'heading' => __('Back Image'),
+                'default' => ''
+            ),
+            'back_bg_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Back Background Color'),
+                'default' => ''
+            ),
+            'back_title_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Back Title Color'),
+                'default' => ''
+            ),
+            'back_content_color' => array(
+                'type' => 'colorpicker',
+                'heading' => __('Back Content Color'),
+                'default' => ''
+            ),
+            'radius' => array(
+                'type' => 'slider',
+                'heading' => __('Border Radius (px)'),
+                'default' => '10',
+                'min' => '0',
+                'max' => '50'
+            ),
+        ),
+        'render' => function($atts, $content = null) {
+            // Xây dựng HTML cho mặt trước của flip box
+            $front_image_html = !empty($atts['front_image']) ? '<img src="' . esc_url($atts['front_image']) . '" alt="" />' : '';
+            $front_style = '';
+            if (!empty($atts['front_bg_color'])) {
+                $front_style .= 'background-color: ' . esc_attr($atts['front_bg_color']) . ';';
+            }
+            if (!empty($atts['radius'])) {
+                $front_style .= ' border-radius: ' . esc_attr($atts['radius']) . 'px;';
+            }
+            $front_html = '
+                <div class="flip-box-front" style="' . $front_style . '">
+                    <div class="flip-box-content">
+                        ' . $front_image_html . '
+                        <h3 style="color: ' . esc_attr($atts['front_title_color']) . ';">' . esc_html($atts['front_title']) . '</h3>
+                        <p style="color: ' . esc_attr($atts['front_content_color']) . ';">' . esc_html($atts['front_content']) . '</p>
+                    </div>
+                </div>
+            ';
+
+            // Xây dựng HTML cho mặt sau của flip box
+            $back_image_html = !empty($atts['back_image']) ? '<img src="' . esc_url($atts['back_image']) . '" alt="" />' : '';
+            $back_style = '';
+            if (!empty($atts['back_bg_color'])) {
+                $back_style .= 'background-color: ' . esc_attr($atts['back_bg_color']) . ';';
+            }
+            if (!empty($atts['radius'])) {
+                $back_style .= ' border-radius: ' . esc_attr($atts['radius']) . 'px;';
+            }
+            $back_html = '
+                <div class="flip-box-back" style="' . $back_style . '">
+                    <div class="flip-box-content">
+                        ' . $back_image_html . '
+                        <h3 style="color: ' . esc_attr($atts['back_title_color']) . ';">' . esc_html($atts['back_title']) . '</h3>
+                        <p style="color: ' . esc_attr($atts['back_content_color']) . ';">' . esc_html($atts['back_content']) . '</p>
+                    </div>
+                </div>
+            ';
+
+            // Tổng hợp HTML cho flip box hoàn chỉnh
+            $flip_box_html = '
+                <div class="flip-box">
+                    <div class="flip-box-inner">
+                        ' . $front_html . $back_html . '
+                    </div>
+                </div>
+            ';
+
+            return $flip_box_html;
+        }
+    ));
+}
+
+// Hàm này được gọi khi cài đặt Flatsome theme hoặc khi kích hoạt một plugin tùy chỉnh
+add_action('ux_builder_setup', 'troll9x_flatsome_flip_box_element');
+
+// Đăng ký shortcode để sử dụng trong post content hoặc trong Visual Composer/Elementor
+function troll9x_flip_box_func($params, $content = null, $tag = ''){
+    $GLOBALS['flip_boxes'] = array();
+    $GLOBALS['flip_box_count'] = 0;
+
+    extract(shortcode_atts(array(
+        'id' => 'flip-box-'.rand(),
+        'front_title' => '',
+        'front_content' => '',
+        'front_image' => '',
+        'front_bg_color' => '',
+        'front_title_color' => '',
+        'front_content_color' => '',
+        'back_title' => '',
+        'back_content' => '',
+        'back_image' => '',
+        'back_bg_color' => '',
+        'back_title_color' => '',
+        'back_content_color' => '',
+        'radius' => '',
+    ), $params));
+
+    $front_image_url = !empty($front_image) ? wp_get_attachment_image_url($front_image, 'full') : '';
+
+    $back_image_url = !empty($back_image) ? wp_get_attachment_image_url($back_image, 'full') : '';
+
+    $front_style = '';
+    if (!empty($front_bg_color)) {
+        $front_style .= 'background-color: ' . esc_attr($front_bg_color) . ';';
+    }
+    if (!empty($radius)) {
+        $front_style .= ' border-radius: ' . esc_attr($radius) . 'px;';
+    }
+
+    $back_style = '';
+    if (!empty($back_bg_color)) {
+        $back_style .= 'background-color: ' . esc_attr($back_bg_color) . ';';
+    }
+    if (!empty($radius)) {
+        $back_style .= ' border-radius: ' . esc_attr($radius) . 'px;';
+    }
+
+    $front_image_html = !empty($front_image_url) ? '<img src="' . esc_url($front_image_url) . '" alt="" />' : '';
+
+    $back_image_html = !empty($back_image_url) ? '<img src="' . esc_url($back_image_url) . '" alt="" />' : '';
+
+    $front_html = '
+        <div class="flip-box-front" style="' . $front_style . '">
+            <div class="flip-box-content">
+                ' . $front_image_html . '
+                <h3 style="color: ' . esc_attr($front_title_color) . ';">' . esc_html($front_title) . '</h3>
+                <p style="color: ' . esc_attr($front_content_color) . ';">' . esc_html($front_content) . '</p>
+            </div>
+        </div>
+    ';
+
+    $back_html = '
+        <div class="flip-box-back" style="' . $back_style . '">
+            <div class="flip-box-content">
+                ' . $back_image_html . '
+                <h3 style="color: ' . esc_attr($back_title_color) . ';">' . esc_html($back_title) . '</h3>
+                <p style="color: ' . esc_attr($back_content_color) . ';">' . esc_html($back_content) . '</p>
+            </div>
+        </div>
+    ';
+
+    $flip_box_html = '
+        <div class="flip-box">
+            <div class="flip-box-inner">
+                ' . $front_html . $back_html . '
+            </div>
+        </div>
+    ';
+
+    return $flip_box_html;
+}
+add_shortcode('troll9x_flip_box', 'troll9x_flip_box_func');
+?>
